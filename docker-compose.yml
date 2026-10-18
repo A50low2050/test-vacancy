@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgresql
+    environment:
+      POSTGRES_USER: ${POSTGRES__USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES__PASSWORD:-12345}
+      POSTGRES_DB: ${POSTGRES__DB:-payments}
+    ports:
+      - "${POSTGRES__PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES__USER:-postgres} -d ${POSTGRES__DB:-payments}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  broker-payment:
+    image: rabbitmq:3.12-management-alpine
+    container_name: broker
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ__USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ__PASSWORD:-guest}
+    ports:
+      - "${RABBITMQ__PORT:-5672}:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
