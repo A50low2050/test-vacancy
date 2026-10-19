@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import (
 from app.config import settings
 
 engine = create_async_engine(
-    settings.sqlite.url_async,
+    settings.postgres.url,
     echo=False,
 )
 
